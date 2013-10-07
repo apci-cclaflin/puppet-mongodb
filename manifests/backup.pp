@@ -32,7 +32,7 @@ class mongodb::backup ($backup_hash = '3fbe30') {
     cwd     => "/etc/automongobackup",
     command => "wget -q https://github.com/micahwedemeyer/automongobackup/raw/${backup_hash}/src/automongobackup.sh -O automongobackup-${backup_hash}.sh",
     creates => "/etc/automongobackup/automongobackup-${backup_hash}.sh",
-    require => File["/etc/automysqlbackup"],
+    require => File["/etc/automongobackup"],
   }
 
   file { "/etc/automongobackup/automongobackup-${backup_hash}.sh":
