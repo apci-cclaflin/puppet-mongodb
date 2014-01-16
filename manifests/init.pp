@@ -2,66 +2,44 @@
 #
 # This class installs MongoDB (stable)
 #
-# Notes:
-#  This class is Ubuntu specific.
-#  By Sean Porter, Gastown Labs Inc.
-#
 # Actions:
 #  - Install MongoDB using a 10gen Ubuntu repository
 #  - Manage the MongoDB service
-#  - MongoDB can be part of a replica set
 #
 # Sample Usage:
 #  include mongodb
 #
-class mongodb ($version = 'installed') {
-  include mongodb::params
+class mongodb {
 
-  if ! defined(Package["python-software-properties"]) {
-     package { "python-software-properties":
-       ensure => installed,
-     }
+  $mongodb_kill_limit     = hiera('mongodb_kill_limit', 300)
+  $mongodb_ulimit_nofile  = hiera('mongodb_ulimit_nofile', 20000)
+  $mongodb_version        = hiera('mongodb_version', 'latest')
+
+  apt::source { "mongodb":
+    location        => "http://downloads-distro.mongodb.org/repo/ubuntu-upstart",
+    include_release => false,    
+    repos           => "dist 10gen",
+    include_src     => false,
+    key             => "7F0CEB10",
+    key_server      => "keyserver.ubuntu.com",
   }
 
-  exec { "10gen-apt-repo":
-    path => "/bin:/usr/bin",
-    command => "echo '${mongodb::params::repository}' >> /etc/apt/sources.list",
-    unless => "cat /etc/apt/sources.list | grep 10gen",
-    require => Package["python-software-properties"],
-  }
-
-  exec { "10gen-apt-key":
-    path => "/bin:/usr/bin",
-    command => "apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10",
-    unless => "apt-key list | grep 10gen",
-    require => Exec["10gen-apt-repo"],
-  }
-
-  exec { "update-apt":
-    path => "/bin:/usr/bin",
-    command => "apt-get update",
-    unless => "ls /usr/bin | grep mongo",
-    require => Exec["10gen-apt-key"],
-  }
-
-  package { $mongodb::params::package:
-    ensure => $version,
-    require => Exec["update-apt"],
+  package { "mongodb-10gen":
+    ensure  => $mongodb_version,
+    require => Apt::Source["mongodb"],
   }
 
   service { "mongodb":
     enable => true,
     ensure => running,
-    require => Package[$mongodb::params::package],
+    require => Package["mongodb-10gen"],
   }
 
-  define replica_set {
-    file { "/etc/init/mongodb.conf":
-      content => template("mongodb/mongodb.conf.erb"),
-      mode => "0644",
-      notify => Service["mongodb"],
-      require => Package[$mongodb::params::package],
-    }
+  file { "/etc/init/mongodb.conf":
+    content => template("mongodb/mongodb.conf.erb"),
+    mode => "0644",
+    notify => Service["mongodb"],
+    require => Package["mongodb-10gen"],
   }
 
 }

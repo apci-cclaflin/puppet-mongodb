@@ -1,6 +1,10 @@
 # Ubuntu upstart file at /etc/init/mongodb.conf
 # Managed by Puppet, DO NOT TOUCH!
 
+limit nofile <%= mongodb_ulimit_nofile %> <%= mongodb_ulimit_nofile %>
+
+kill timeout <%= mongodb_kill_limit %> # wait <%= mongodb_kill_limit %>s between SIGTERM and SIGKILL.
+
 pre-start script
     mkdir -p /var/lib/mongodb/
     mkdir -p /var/log/mongodb/
@@ -12,5 +16,5 @@ stop on runlevel [06]
 script
   ENABLE_MONGODB="yes"
   if [ -f /etc/default/mongodb ]; then . /etc/default/mongodb; fi
-  if [ "x$ENABLE_MONGODB" = "xyes" ]; then exec start-stop-daemon --start --quiet --chuid mongodb --exec  /usr/bin/mongod -- --config /etc/mongodb.conf --replSet <%= name %>; fi
+  if [ "x$ENABLE_MONGODB" = "xyes" ]; then exec start-stop-daemon --start --quiet --chuid mongodb --exec  /usr/bin/mongod -- --config /etc/mongodb.conf; fi
 end script
