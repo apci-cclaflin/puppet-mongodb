@@ -1,18 +1,18 @@
-# Class: mongodb
+# Class: mongodb::mongos
 #
 # This class installs MongoDB (stable)
 #
 # Actions:
 #  - Install MongoDB using a 10gen Ubuntu repository
-#  - Manage the MongoDB service
+#  - Manage the mongos service
 #
 # Sample Usage:
-#  include mongodb
+#  include mongodb::mongos
 #
-class mongodb {
+class mongodb::mongos {
 
   $mongodb_kill_limit     = hiera('mongodb_kill_limit', 300)
-  $mongodb_process_name   = 'mongod'
+  $mongodb_process_name   = 'mongos'
   $mongodb_ulimit_nofile  = hiera('mongodb_ulimit_nofile', 20000)
   $mongodb_version        = hiera('mongodb_version', 'latest')
 
@@ -31,15 +31,21 @@ class mongodb {
   }
 
   service { "mongodb":
-    enable  => true,
-    ensure  => running,
-    require => [ Package["mongodb-10gen"], File["/etc/init/mongodb.conf"] ],
+    enable  => false,
+    ensure  => stopped,
+    require => Package["mongodb-10gen"],
   }
 
-  file { "/etc/init/mongodb.conf":
+  service { "mongos":
+    enable  => true,
+    ensure  => running,
+    require => [ Package["mongodb-10gen"], File["/etc/init/mongos.conf"] ],
+  }
+
+  file { "/etc/init/mongos.conf":
     content => template("mongodb/init-mongodb.conf.erb"),
     mode    => "0644",
-    notify  => Service["mongodb"],
+    notify  => Service["mongos"],
     require => Package["mongodb-10gen"],
   }
 
