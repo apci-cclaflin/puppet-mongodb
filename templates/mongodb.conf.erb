@@ -1,17 +1,17 @@
 # mongodb.conf
-<% if mongodb_dbpath != 'false' %>
+<% if @mongodb_dbpath != 'false' %>
 # Where to store the data.
 # Note: if you run mongodb as a non-root user (recommended) you may
 # need to create and set permissions for this directory manually,
 # e.g., if the parent directory isn't mutable by the mongodb user.
-dbpath=<%= mongodb_dbpath %>
+dbpath=<%= @mongodb_dbpath %>
 <% end %>
 #where to log
 logpath=/var/log/mongodb/mongodb.log
 
 logappend=true
 
-port = <%= mongodb_listen_port %>
+port = <%= @mongodb_listen_port %>
 
 # Disables write-ahead journaling
 # nojournal = true
@@ -80,13 +80,13 @@ port = <%= mongodb_listen_port %>
 # or
 #master = true
 #source = slave.example.com
-<% if mongodb_replica_set != 'false' and mongodb_configdb == 'false' %>
+<% if @mongodb_replica_set != 'false' and @mongodb_configdb == 'false' %>
 # in replica set configuration, specify the name of the replica set
-replSet = <%= mongodb_replica_set %>
+replSet = <%= @mongodb_replica_set %>
 <% end %>
-<% if mongodb_config_svr != 'false' %>
+<% if @mongodb_config_svr != 'false' %>
 configsvr=true
 <% end %>
-<% if mongodb_configdb != 'false' %>
-configdb=<%= mongodb_configdb %>
+<% if @mongodb_configdb != 'false' %>
+configdb=<%= @mongodb_configdb %>
 <% end %>
